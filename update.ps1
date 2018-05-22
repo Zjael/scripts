@@ -11,6 +11,16 @@
   	Creation Date:  08-05-2018
 #>
 
+function size($w, $h) {
+    New-Object System.Management.Automation.Host.Size($w, $h)
+}
+
+$ui = (Get-Host).UI.RawUI
+$ui.BackgroundColor = "Black"
+$ui.WindowSize = size 38 12
+$ui.BufferSize = size 38 12
+clear-host
+
 # Self-elevate the script if required
 if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
 	if ([int](Get-CimInstance -Class Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber) -ge 6000) {
@@ -24,7 +34,7 @@ if (!(Get-ScheduledTask -TaskName "Chocolatey update" -ErrorAction SilentlyConti
 	Write-Host "Task scheduler not setup, adding will allow this script to autorun on startup"
 	$setup_schedule = Read-Host("would you like to add it to task scheduler? [Y]es/[N]o")
 	if($setup_schedule -eq "y" -or $setup_schedule -eq "yes") {
-		$TaskArg = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Minimized -file " + '"' + "$PSScriptRoot\update.ps1" + '"'
+		$TaskArg = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Maximized -file " + '"' + "$PSScriptRoot\update.ps1" + '"'
 		$TaskAction = New-ScheduledTaskAction -Execute "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -Argument $TaskArg
 		$TaskTrigger = New-ScheduledTaskTrigger -AtLogOn
 		$TaskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -DontStopOnIdleEnd  
@@ -84,6 +94,3 @@ if ($outdated_packages) {
 		}
 	}
 }
-
-Write-Host -NoNewLine "Press any key to continue..."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
